@@ -28,7 +28,7 @@ public class User {
     @Column(name = "us_email", length = 50 , nullable = false , unique = true)
     private String usEmail;
 
-    @Column(name = "us_pw" , length = 10, nullable = false)
+    @Column(name = "us_pw" , length = 255, nullable = false)
     private String usPw;
 
     @Column(name = "us_nickname" , length = 50 , nullable = false , unique = true)
@@ -37,4 +37,10 @@ public class User {
     @Column(name = "created_at" , nullable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    // 닉네임 변경 메서드
+    public void changeNickname(String newNickname) {
+        this.usNickname = newNickname;
+    }
+
 }

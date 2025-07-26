@@ -21,8 +21,9 @@ public class Chat_log {
     @Column(name = "log_id" , nullable = false)
     private int logId;
 
-    @Column(name = "session_id" , nullable = false)
-    private int sessionId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "session_id" , nullable = false)
+    private Chat_session sessionId;
 
     @Column(name = "chat_message" , nullable = false , length = 100)
     private String chatMessage;

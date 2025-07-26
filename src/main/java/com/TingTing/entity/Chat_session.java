@@ -22,13 +22,13 @@ public class Chat_session {
     @Column(name = "sessin_id" , nullable = false)
     private int sessinId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "us_idx" , nullable = false)
-    private int usIdx;
+    private User usIdx;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conditios_id" , nullable = false)
-    private int conditiosId;
+    private Conditions conditiosId;
 
     @Column(name = "created_at" , nullable = false)
     @Builder.Default
