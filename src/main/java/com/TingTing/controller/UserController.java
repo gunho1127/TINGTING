@@ -2,9 +2,9 @@ package com.TingTing.controller;
 
 import com.TingTing.dto.UserDTO;
 import com.TingTing.service.UserService;
+import com.TingTing.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import com.TingTing.entity.User;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,16 +17,16 @@ public class UserController {
 
     // ✅ 내 정보 조회 (JWT 기반)
     @GetMapping("/me")
-    public ResponseEntity<UserDTO> getMyProfile(@AuthenticationPrincipal User user) {
-        UserDTO dto = userService.getUserProfile(user.getUsIdx());
-        return ResponseEntity.ok(dto);
+    public ResponseEntity<UserDTO> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        UserDTO user = userService.getUserProfile(userDetails.getUser().getUsIdx());
+        return ResponseEntity.ok(user);
     }
 
     // ✅ 닉네임 수정
     @PutMapping("/me/nickname")
-    public ResponseEntity<Void> updateNickname(@AuthenticationPrincipal User user,
+    public ResponseEntity<Void> updateNickname(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                @RequestParam("nickname") String nickname) {
-        userService.updateNickname(user.getUsIdx(), nickname);
+        userService.updateNickname(userDetails.getUser().getUsIdx(), nickname);
         return ResponseEntity.ok().build();
     }
 
