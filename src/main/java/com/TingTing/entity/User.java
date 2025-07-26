@@ -43,4 +43,8 @@ public class User {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
+
+    public void updateNickname(String nickname) {
+        this.usNickname = nickname;
+    }
 }
