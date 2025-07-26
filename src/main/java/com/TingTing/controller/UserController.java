@@ -2,7 +2,6 @@ package com.TingTing.controller;
 
 import com.TingTing.dto.UserDTO;
 import com.TingTing.service.UserService;
-import com.TingTing.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
