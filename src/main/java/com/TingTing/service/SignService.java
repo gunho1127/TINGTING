@@ -6,7 +6,6 @@ import com.TingTing.dto.SignUpRequest;
 import com.TingTing.dto.TokenResponse;
 import com.TingTing.entity.User;
 import com.TingTing.entity.EmailVerificationToken;
-import com.TingTing.mapper.UserMapper;
 import com.TingTing.repository.EmailVerificationTokenRepository;
 import com.TingTing.repository.UserRepository;
 import com.TingTing.util.CodeGenerator;
@@ -118,9 +117,13 @@ public class SignService {
             throw new RuntimeException("이미 사용 중인 닉네임입니다.");
         }
 
-        User user = UserMapper.toEntity(request, passwordEncoder);
+        User user = User.builder()
+                .usEmail(request.getEmail())
+                .usPw(passwordEncoder.encode(request.getPassword()))
+                .usNickname(request.getNickname())
+                .build();
+
         userRepository.save(user);
-        
     }
 
     // ✅ 로그인 처리
