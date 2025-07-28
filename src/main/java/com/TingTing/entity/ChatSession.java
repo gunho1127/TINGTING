@@ -7,8 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "chat_session")
@@ -21,8 +19,8 @@ public class ChatSession {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "session_id" , nullable = false)
-    private int sessionId;
+    @Column(name = "sessin_id" , nullable = false)
+    private int sessinId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "us_idx" , nullable = false)
@@ -35,7 +33,4 @@ public class ChatSession {
     @Column(name = "created_at" , nullable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ChatLog> chatLogs = new ArrayList<>();
 }
