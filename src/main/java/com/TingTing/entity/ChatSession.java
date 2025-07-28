@@ -15,20 +15,20 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 
-public class Chat_session {
+public class ChatSession {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "sessin_id" , nullable = false)
     private int sessinId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "us_idx" , nullable = false)
-    private int usIdx;
-    
-    @ManyToOne
+    private User usIdx;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conditios_id" , nullable = false)
-    private int conditiosId;
+    private Conditions conditiosId;
 
     @Column(name = "created_at" , nullable = false)
     @Builder.Default

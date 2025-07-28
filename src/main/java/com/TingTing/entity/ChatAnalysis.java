@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 
-public class Chat_analysis {
+public class ChatAnalysis {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "analysis_id", nullable = false)
