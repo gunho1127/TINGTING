@@ -1,5 +1,7 @@
 package com.TingTing.controller;
 
+import com.TingTing.dto.ChatStartRequestDto;
+import com.TingTing.dto.ChatStartResponseDto;
 import com.TingTing.dto.ConditionRequestDto;
 import com.TingTing.dto.ConditionResponseDto;
 import com.TingTing.entity.User;
@@ -30,15 +32,14 @@ public class ChatController {
         return ResponseEntity.ok(response);
     }
 
-//    @PostMapping("/start")
-//    public ResponseEntity<ChatStartResponseDto> startChat(
-//            @RequestBody ChatStartRequestDto requestDto,
-//            @AuthenticationPrincipal UserDetailsImpl userDetails
-//    ) {
-//        Long userId = userDetails.getUser().getId();
-//        ChatStartResponseDto response = chatService.startSession(userId, requestDto.getConditionId());
-//        return ResponseEntity.ok(response);
-//    }
+    @PostMapping("/start")
+    public ResponseEntity<ChatStartResponseDto> startChat(
+            @RequestBody ChatStartRequestDto requestDto,
+            @AuthenticationPrincipal User user
+    ) {
+        ChatStartResponseDto response = chatService.startSession(user, requestDto.getConditionId());
+        return ResponseEntity.ok(response);
+    }
 //
 //    @PostMapping("/send")
 //    public ResponseEntity<ChatMessageResponseDto> sendMessage(

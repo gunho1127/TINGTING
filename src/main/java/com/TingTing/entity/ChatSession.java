@@ -28,7 +28,7 @@ public class ChatSession {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conditios_id" , nullable = false)
-    private Conditions conditiosId;
+    private Conditions conditionsId;
 
     @Column(name = "created_at" , nullable = false)
     @Builder.Default
