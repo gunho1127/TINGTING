@@ -17,4 +17,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     // 닉네임 존재 여부 확인
     boolean existsByUsNickname(String usNickname);
+
+
 }

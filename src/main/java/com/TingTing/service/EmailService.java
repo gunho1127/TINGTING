@@ -1,11 +1,10 @@
 package com.TingTing.service;
 
-import com.TingTing.entity.User;
-import com.TingTing.security.JwtTokenProvider;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,21 +12,29 @@ import org.springframework.stereotype.Service;
 public class EmailService {
 
     private final JavaMailSender mailSender;
-    private final JwtTokenProvider jwtTokenProvider;
 
-    @Value("${spring.mail.username}")
-    private String senderEmail;
+    public void sendVerificationEmail(String toEmail, String code) {
+        String subject = "[TingTing] 이메일 인증 코드";
+        String content = """
+                <div style="font-family: Arial, sans-serif; font-size: 16px;">
+                    <p><strong>TingTing 회원가입 이메일 인증</strong></p>
+                    <p>인증 코드는 다음과 같습니다:</p>
+                    <div style="font-size: 24px; font-weight: bold; color: #2d6cdf;">%s</div>
+                    <p>인증 코드는 3분 동안 유효합니다.</p>
+                </div>
+                """.formatted(code);
 
-    public void sendVerificationEmail(User user) {
-        String token = jwtTokenProvider.createToken(user.getUsEmail());
-        String link = "https://yourapp.com/api/auth/verify?token=" + token;
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(user.getUsEmail());
-        message.setSubject("이메일 인증을 완료해주세요");
-        message.setText("다음 링크를 클릭해 인증을 완료하세요:\n" + link);
-        message.setFrom(senderEmail);
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(content, true); // true = HTML
 
-        mailSender.send(message);
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new IllegalStateException("이메일 전송 실패", e);
+        }
     }
 }
