@@ -7,5 +7,5 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class ConditionResponseDto {
-    private Long conditionId;
+    private int conditionId;
 }

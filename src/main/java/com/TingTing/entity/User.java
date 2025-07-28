@@ -35,6 +35,15 @@ public class User {
     @Column(name = "us_nickname" , length = 50 , nullable = false , unique = true)
     private String usNickname;
 
+    @Column(name = "us_gender", length = 10)
+    private String usGender;
+
+    @Column(name = "us_age", length = 10)
+    private String usAge;
+
+    @Column(name = "us_job", length = 50)
+    private String usJob;
+
     @Column(name = "created_at" , nullable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
