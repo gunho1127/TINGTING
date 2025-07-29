@@ -39,7 +39,7 @@ public class ChatService {
         Conditions condition = conditionsRepository.findById(conditionId)
                 .orElseThrow(() -> new IllegalArgumentException("조건을 찾을 수 없습니다."));
 
-        // 세션 생성
+        // 채팅 세션 생성
         ChatSession session = ChatSessionMapper.toEntity(user, condition);
         chatSessionRepository.save(session);
 

@@ -15,7 +15,8 @@ public class PromptBuilder {
                 .append(user.getUsGender()).append("이고 직업은 ")
                 .append(user.getUsJob()).append("야. ");
 
-        sb.append("너는 ")
+        sb.append("너는 이름이 ")
+                .append(condition.getAiName()).append(" 이고 ")
                 .append(condition.getAiAge()).append("살 ")
                 .append(condition.getAiGender()).append("이고 직업은 ")
                 .append(condition.getAiJob()).append("야. ");
@@ -32,7 +33,7 @@ public class PromptBuilder {
             sb.append("너의 관심사는 ").append(condition.getAiInterests()).append(" 이야. ");
         }
 
-        sb.append("소개팅을 시작할건데 너의 대화 길이나 말투, 질문등은 조건대로 적용해서 바로 대화시작해줘");
+        sb.append("이제 소개팅을 시작할건데 너의 대화 길이나 말투, 질문등은 조건대로 적용해서 대화 시작해줘, 한명씩 대화를 주고받는거야");
 
         return sb.toString();
     }

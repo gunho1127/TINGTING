@@ -24,7 +24,7 @@ public class ChatLog {
     @Column(name = "session_id" , nullable = false)
     private int sessionId;
 
-    @Column(name = "chat_message" , nullable = false , length = 100)
+    @Column(name = "chat_message" , nullable = false , length = 5000)
     private String chatMessage;
 
     @Column(name = "created_at" , nullable = false)
