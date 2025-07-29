@@ -20,7 +20,7 @@ public class Conditions {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "conditions_id", nullable = false)
-    private Long conditionsId;
+    private int conditionsId;
 
     @Column(name = "ai_name", nullable = false, length = 100)
     private String aiName;
