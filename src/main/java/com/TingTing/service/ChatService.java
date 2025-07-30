@@ -1,13 +1,12 @@
 package com.TingTing.service;
 
-import com.TingTing.dto.ChatStartResponseDto;
-import com.TingTing.dto.ConditionRequestDto;
-import com.TingTing.dto.ConditionResponseDto;
+import com.TingTing.dto.*;
 import com.TingTing.entity.ChatLog;
 import com.TingTing.entity.ChatSession;
 import com.TingTing.entity.Conditions;
 import com.TingTing.entity.User;
 import com.TingTing.gpt.GptClient;
+import com.TingTing.gpt.GptMessage;
 import com.TingTing.mapper.ChatLogMapper;
 import com.TingTing.mapper.ConditionMapper;
 import com.TingTing.mapper.ChatSessionMapper;
@@ -18,6 +17,10 @@ import com.TingTing.util.PromptBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +63,34 @@ public class ChatService {
         // 4. 응답 반환
         return ChatSessionMapper.toResponse(session, aiMessage);
     }
+
+    public ChatMessageResponseDto sendMessage(ChatMessageRequestDto requestDto) {
+        // 1. 세션 조회
+        ChatSession session = chatSessionRepository.findById(requestDto.getSessionId())
+                .orElseThrow(() -> new IllegalArgumentException("채팅 세션이 존재하지 않습니다."));
+
+        // 2. 기존 로그를 GPT 메시지 형식으로 변환
+        List<GptMessage> messageList = session.getChatLogs().stream()
+                .sorted(Comparator.comparing(ChatLog::getCreatedAt))
+                .map(log -> new GptMessage(log.getChatRole().toLowerCase(), log.getChatMessage()))
+                .collect(Collectors.toList());
+
+        // 3. 유저 메시지 로그 저장 및 메시지 리스트에 추가
+        ChatLog userLog = ChatLogMapper.toEntity(session, requestDto.getMessage(), "USER");
+        chatLogRepository.save(userLog);
+        messageList.add(new GptMessage("user", requestDto.getMessage()));
+
+        // 4. GPT 응답 받아오기
+        String reply = gptClient.getReply(messageList);
+
+        // 5. AI 응답 로그 저장
+        ChatLog aiLog = ChatLogMapper.toEntity(session, reply, "AI");
+        chatLogRepository.save(aiLog);
+
+        // 6. 응답 DTO 반환
+        return new ChatMessageResponseDto(session.getSessionId(), reply, "AI");
+    }
+
 
 
 }

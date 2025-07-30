@@ -40,16 +40,6 @@ public class ChatController {
         ChatStartResponseDto response = chatService.startSession(user, requestDto.getConditionId());
         return ResponseEntity.ok(response);
     }
-//
-//    @PostMapping("/send")
-//    public ResponseEntity<ChatMessageResponseDto> sendMessage(
-//            @RequestBody ChatMessageRequestDto requestDto,
-//            @AuthenticationPrincipal UserDetailsImpl userDetails
-//    ) {
-//        Long userId = userDetails.getUser().getId();
-//        ChatMessageResponseDto response = chatService.sendMessage(userId, requestDto);
-//        return ResponseEntity.ok(response);
-//    }
 
 }
 
