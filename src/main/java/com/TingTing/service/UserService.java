@@ -5,6 +5,7 @@ import com.TingTing.entity.User;
 import com.TingTing.mapper.UserMapper;
 import com.TingTing.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public UserDTO getUserProfile(int usIdx) {
         return userRepository.findById(usIdx)
@@ -25,6 +27,18 @@ public class UserService {
         User user = userRepository.findById(usIdx)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.updateNickname(nickname);
+        userRepository.save(user);
+    }
+
+    public void updatePassword(int usIdx, String currentPw, String newPw) {
+        User user = userRepository.findById(usIdx)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(currentPw, user.getUsPw())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+
+        user.updatePassword(passwordEncoder.encode(newPw));
         userRepository.save(user);
     }
 }

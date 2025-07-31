@@ -5,6 +5,7 @@ import com.TingTing.entity.ChatLog;
 import com.TingTing.entity.ChatSession;
 import com.TingTing.entity.Conditions;
 import com.TingTing.entity.User;
+import com.TingTing.dto.ChatLogDTO;
 import com.TingTing.gpt.GptClient;
 import com.TingTing.gpt.GptMessage;
 import com.TingTing.mapper.ChatLogMapper;
@@ -91,7 +92,12 @@ public class ChatService {
         return new ChatMessageResponseDto(session.getSessionId(), reply, "AI");
     }
 
-
+    public java.util.List<ChatLogDTO> getUserChatLogs(User user) {
+        java.util.List<ChatLog> logs = chatLogRepository.findBySessionUsIdx(user);
+        return logs.stream()
+                .map(ChatLogMapper::toDto)
+                .toList();
+    }
 
 }
 
