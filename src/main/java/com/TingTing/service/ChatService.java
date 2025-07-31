@@ -82,7 +82,6 @@ public class ChatService {
 
         // 4. GPT 응답 받아오기
         String reply = gptClient.getReply(messageList);
-        System.out.println(reply);
 
         // 5. AI 응답 로그 저장
         ChatLog aiLog = ChatLogMapper.toEntity(session, reply, "AI");

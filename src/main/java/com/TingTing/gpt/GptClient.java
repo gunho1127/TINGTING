@@ -34,9 +34,8 @@ public class GptClient {
     public String getReply(List<GptMessage> messagesList) {
         JSONArray messages = new JSONArray();
         for (GptMessage msg : messagesList) {
-            String mappedRole = msg.role().equals("ai") ? "assistant" : msg.role();
             messages.put(new JSONObject()
-                    .put("role", mappedRole)
+                    .put("role", msg.role())
                     .put("content", msg.content()));
         }
 
@@ -46,35 +45,31 @@ public class GptClient {
     // 실제 OpenAI 호출
     private String callGptApi(JSONArray messages) {
         JSONObject requestBody = new JSONObject()
-                .put("model", "gpt-4") // ✅ "gpt-4.0" → "gpt-4"
+                .put("model", "gpt-3.5-turbo")
                 .put("temperature", 0.8)
                 .put("messages", messages);
-
-        System.out.println("▶️ GPT 요청 바디: " + requestBody.toString());
 
         Request request = new Request.Builder()
                 .url(API_URL)
                 .header("Authorization", "Bearer " + apiKey)
                 .header("Content-Type", "application/json")
-                .post(RequestBody.create(requestBody.toString(), MediaType.parse("application/json")))
+                .post(RequestBody.create(
+                        requestBody.toString(),
+                        MediaType.parse("application/json")
+                ))
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {
-            String responseBody = response.body() != null ? response.body().string() : "no body";
-            if (!response.isSuccessful()) {
-                System.out.println("❌ GPT 응답: " + responseBody);
-                throw new RuntimeException("GPT 호출 실패: " + response);
-            }
+            if (!response.isSuccessful()) throw new RuntimeException("GPT 호출 실패: " + response);
 
-            JSONObject json = new JSONObject(responseBody);
+            String body = response.body().string();
+            JSONObject json = new JSONObject(body);
             return json.getJSONArray("choices")
                     .getJSONObject(0)
                     .getJSONObject("message")
                     .getString("content");
-
         } catch (IOException e) {
             throw new RuntimeException("GPT API 호출 오류", e);
         }
     }
-
 }
