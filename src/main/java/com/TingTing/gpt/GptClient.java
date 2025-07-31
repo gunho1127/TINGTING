@@ -34,8 +34,9 @@ public class GptClient {
     public String getReply(List<GptMessage> messagesList) {
         JSONArray messages = new JSONArray();
         for (GptMessage msg : messagesList) {
+            String mappedRole = msg.role().equals("ai") ? "assistant" : msg.role();
             messages.put(new JSONObject()
-                    .put("role", msg.role())
+                    .put("role", mappedRole)
                     .put("content", msg.content()));
         }
 
@@ -45,7 +46,7 @@ public class GptClient {
     // 실제 OpenAI 호출
     private String callGptApi(JSONArray messages) {
         JSONObject requestBody = new JSONObject()
-                .put("model", "gpt-3.5-turbo")
+                .put("model", "gpt-4")
                 .put("temperature", 0.8)
                 .put("messages", messages);
 
