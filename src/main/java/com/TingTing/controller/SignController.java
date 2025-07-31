@@ -54,6 +54,7 @@ public class SignController {
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> signin(@RequestBody SignInRequest dto,
                                                 HttpServletResponse response) {
+        System.out.println(dto);
         return ResponseEntity.ok(signService.logIn(dto, response));
     }
 
