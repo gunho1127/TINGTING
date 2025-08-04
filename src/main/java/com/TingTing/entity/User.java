@@ -56,4 +56,18 @@ public class User {
     public void updateNickname(String nickname) {
         this.usNickname = nickname;
     }
+
+    public String getPassword() {
+        return this.usPw;
+    }
+    public void setPassword(String password) {
+        this.usPw = password;
+    }
+
+    @Column
+    private String usProvider; // "google"
+
+    @Column
+    private String usProviderId; // 구글 고유 ID
+
 }

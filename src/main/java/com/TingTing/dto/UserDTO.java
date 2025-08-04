@@ -16,4 +16,5 @@ public class UserDTO {
     private String usNickname;
     private String usProfileImg;
     private LocalDateTime createdAt;
+
 }

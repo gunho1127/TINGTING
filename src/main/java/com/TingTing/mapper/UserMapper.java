@@ -17,7 +17,6 @@ public class UserMapper {
                 .createdAt(user.getCreatedAt())
                 .build();
     }
-
     public static User toEntity(SignUpRequest request, PasswordEncoder passwordEncoder) {
         return User.builder()
                 .usEmail(request.getEmail())

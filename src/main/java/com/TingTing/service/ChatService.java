@@ -13,11 +13,16 @@ import com.TingTing.mapper.ChatSessionMapper;
 import com.TingTing.repository.ChatSessionRepository;
 import com.TingTing.repository.ConditionsRepository;
 import com.TingTing.repository.ChatLogRepository;
+import com.TingTing.repository.UserRepository;
 import com.TingTing.util.PromptBuilder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,6 +36,8 @@ public class ChatService {
     private final ChatSessionRepository chatSessionRepository;
     private final ChatLogRepository chatLogRepository;
     private final GptClient gptClient;
+
+    private final UserRepository userRepository;
 
     public ConditionResponseDto saveCondition(ConditionRequestDto dto) {
         Conditions condition = ConditionMapper.toEntity(dto);
@@ -91,8 +98,22 @@ public class ChatService {
         return new ChatMessageResponseDto(session.getSessionId(), reply, "AI");
     }
 
+    // ✅ 내 세션 목록 조회
+    public List<ChatSession> getChatSessions(int usIdx) {
+        User user = userRepository.findById(usIdx)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return chatSessionRepository.findAllByUsIdx(user);
+    }
 
+    // ✅ 특정 세션의 채팅 로그 조회
+    public List<ChatLog> getChatLogs(int sessionId, int usIdx) {
+        ChatSession session = chatSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new RuntimeException("Session not found"));
 
+        if (session.getUsIdx().getUsIdx() != usIdx) {
+            throw new AccessDeniedException("접근 권한이 없습니다.");
+        }
+
+        return chatLogRepository.findBySession(session);
+    }
 }
-
-

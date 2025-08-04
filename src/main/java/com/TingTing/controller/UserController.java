@@ -1,5 +1,7 @@
 package com.TingTing.controller;
 
+import com.TingTing.dto.ChangePasswordRequest;
+import com.TingTing.dto.UpdateNicknameRequest;
 import com.TingTing.dto.UserDTO;
 import com.TingTing.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -22,11 +24,18 @@ public class UserController {
         return ResponseEntity.ok(dto);
     }
 
-    // ✅ 닉네임 수정
     @PutMapping("/me/nickname")
     public ResponseEntity<Void> updateNickname(@AuthenticationPrincipal User user,
-                                               @RequestParam("nickname") String nickname) {
-        userService.updateNickname(user.getUsIdx(), nickname);
+                                               @RequestBody UpdateNicknameRequest request) {
+        userService.updateNickname(user.getUsIdx(), request.getNickname());
+        return ResponseEntity.ok().build();
+    }
+
+    // ✅ 비밀번호 수정
+    @PutMapping("/me/password")
+    public ResponseEntity<Void> changePassword(@AuthenticationPrincipal User user,
+                                               @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(user.getUsIdx(), request.getOldPassword(), request.getNewPassword());
         return ResponseEntity.ok().build();
     }
 
