@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @RequiredArgsConstructor
@@ -18,8 +19,11 @@ public class GptClient {
     private String apiKey;
 
     private static final String API_URL = "https://api.openai.com/v1/chat/completions";
-    private static final OkHttpClient httpClient = new OkHttpClient();
-
+    private static final OkHttpClient httpClient = new OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS) // GPT 응답 최대 대기 시간
+            .build();
     // 최초 프롬프트로 GPT 인삿말 받아오기
     public String getFirstMessage(String systemPrompt) {
         JSONArray messages = new JSONArray();

@@ -1,9 +1,6 @@
 package com.TingTing.controller;
 
-import com.TingTing.dto.ChatStartRequestDto;
-import com.TingTing.dto.ChatStartResponseDto;
-import com.TingTing.dto.ConditionRequestDto;
-import com.TingTing.dto.ConditionResponseDto;
+import com.TingTing.dto.*;
 import com.TingTing.entity.User;
 import com.TingTing.service.ChatService;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +37,17 @@ public class ChatController {
         ChatStartResponseDto response = chatService.startSession(user, requestDto.getConditionId());
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/analysis")
+    public ResponseEntity<ChatAnalysisResponseDto> analyzeChat(
+            @RequestBody ChatAnalysisRequestDto requestDto,
+            @AuthenticationPrincipal User user
+    ) {
+        ChatAnalysisResponseDto analysis = chatService.analyzeSession(user, requestDto.getSessionId());
+        return ResponseEntity.ok(analysis);
+    }
+
+
 
 }
 
