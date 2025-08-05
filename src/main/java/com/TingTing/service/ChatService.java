@@ -126,6 +126,24 @@ public class ChatService {
         return dto;
     }
 
+    // ✅ 내 세션 목록 조회
+    public List<ChatSession> getChatSessions(int usIdx) {
+        User user = userRepository.findById(usIdx)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return chatSessionRepository.findAllByUsIdx(user);
+    }
+
+    // ✅ 특정 세션의 채팅 로그 조회
+    public List<ChatLog> getChatLogs(int sessionId, int usIdx) {
+        ChatSession session = chatSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new RuntimeException("Session not found"));
+
+        if (session.getUsIdx().getUsIdx() != usIdx) {
+            throw new AccessDeniedException("접근 권한이 없습니다.");
+        }
+
+        return chatLogRepository.findBySession(session);
+    }
 
 
 

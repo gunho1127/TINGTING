@@ -5,9 +5,13 @@ import com.TingTing.dto.SignInRequest;
 import com.TingTing.dto.SignUpRequest;
 import com.TingTing.dto.TokenResponse;
 import com.TingTing.entity.User;
+import com.TingTing.repository.UserRepository;
+import com.TingTing.service.RefreshTokenService;
 import com.TingTing.service.SignService;
+import com.TingTing.util.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 public class SignController {
 
     private final SignService signService;
+    private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/verification/email")
     public ResponseEntity<ResponseDTO> sendVerificationEmail(@RequestParam String email) {
@@ -57,11 +63,30 @@ public class SignController {
         return ResponseEntity.ok(signService.logIn(dto, response));
     }
 
-    @PostMapping("/logout")
     public ResponseEntity<Void> logout(@AuthenticationPrincipal User user,
+                                       @RequestHeader(value = "Authorization", required = false) String authHeader,
                                        HttpServletResponse response) {
-        signService.logOut(user, response);
-        return ResponseEntity.ok().build();
+        try {
+            // 1. user 객체가 null인 경우 → Authorization 헤더에서 email 추출
+            if (user == null) {
+                if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                }
+
+                String token = authHeader.replace("Bearer ", "");
+                String email = jwtTokenProvider.getEmailFromToken(token);
+
+                user = userRepository.findByUsEmail(email)
+                        .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+            }
+
+            // 2. 로그아웃 처리
+            signService.logOut(user, response);
+            return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
     }
 
 
