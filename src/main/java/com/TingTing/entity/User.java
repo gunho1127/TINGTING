@@ -10,7 +10,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Entity
-@Table(name = "uesr")
+@Table(name = "user")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -48,6 +48,12 @@ public class User {
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Column
+    private String usProvider; // "google"
+
+    @Column
+    private String usProviderId; // 구글 고유 ID
+
     // 권한 고정 (필요시 Role 컬럼 추가하여 동적 처리 가능)
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
@@ -56,4 +62,12 @@ public class User {
     public void updateNickname(String nickname) {
         this.usNickname = nickname;
     }
+
+    public String getPassword() {
+        return this.usPw;
+    }
+    public void setPassword(String password) {
+        this.usPw = password;
+    }
+
 }
