@@ -1,23 +1,28 @@
 package com.TingTing.service;
 
 import com.TingTing.dto.*;
-import com.TingTing.entity.*;
+import com.TingTing.entity.ChatLog;
+import com.TingTing.entity.ChatSession;
+import com.TingTing.entity.Conditions;
+import com.TingTing.entity.User;
 import com.TingTing.gpt.GptClient;
 import com.TingTing.gpt.GptMessage;
-import com.TingTing.mapper.ChatAnalysisMapper;
 import com.TingTing.mapper.ChatLogMapper;
 import com.TingTing.mapper.ConditionMapper;
 import com.TingTing.mapper.ChatSessionMapper;
-import com.TingTing.repository.ChatAnalysisRepository;
 import com.TingTing.repository.ChatSessionRepository;
 import com.TingTing.repository.ConditionsRepository;
 import com.TingTing.repository.ChatLogRepository;
+import com.TingTing.repository.UserRepository;
 import com.TingTing.util.PromptBuilder;
 import lombok.RequiredArgsConstructor;
-import org.json.JSONObject;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,7 +36,8 @@ public class ChatService {
     private final ChatSessionRepository chatSessionRepository;
     private final ChatLogRepository chatLogRepository;
     private final GptClient gptClient;
-    private final ChatAnalysisRepository chatAnalysisRepository;
+
+    private final UserRepository userRepository;
 
     public ConditionResponseDto saveCondition(ConditionRequestDto dto) {
         Conditions condition = ConditionMapper.toEntity(dto);
@@ -92,40 +98,6 @@ public class ChatService {
         return new ChatMessageResponseDto(session.getSessionId(), reply, "AI");
     }
 
-    public ChatAnalysisResponseDto analyzeSession(User user, int sessionId) {
-        // 1. 세션 검증
-        ChatSession session = chatSessionRepository.findById(sessionId)
-                .orElseThrow(() -> new IllegalArgumentException("세션을 찾을 수 없습니다."));
-
-        if (session.getUsIdx().getUsIdx() != user.getUsIdx()) {
-            throw new IllegalArgumentException("세션에 접근할 권한이 없습니다.");
-        }
-
-        // 2. 대화 로그 불러오기 및 GptMessage로 변환
-        List<ChatLog> logs = chatLogRepository.findBySession_SessionId(sessionId);
-        List<GptMessage> messages = logs.stream()
-                .sorted(Comparator.comparing(ChatLog::getCreatedAt))
-                .map(log -> new GptMessage(log.getChatRole().toLowerCase(), log.getChatMessage()))
-                .collect(Collectors.toList());
-
-        // 3. 프롬프트 삽입
-        String prompt = PromptBuilder.buildAnalysisPrompt();
-        messages.add(0, new GptMessage("system", prompt));
-
-        // 4. GPT 응답 JSON 파싱
-        String gptResponse = gptClient.getReply(messages);
-        JSONObject json = new JSONObject(gptResponse);
-
-        // 5. JSON → DTO
-        ChatAnalysisResponseDto dto = ChatAnalysisMapper.toDto(json);
-
-        // 6. DTO → Entity → 저장
-        ChatAnalysis entity = ChatAnalysisMapper.toEntity(dto, sessionId);
-        chatAnalysisRepository.save(entity);
-
-        return dto;
-    }
-
     // ✅ 내 세션 목록 조회
     public List<ChatSession> getChatSessions(int usIdx) {
         User user = userRepository.findById(usIdx)
@@ -144,11 +116,4 @@ public class ChatService {
 
         return chatLogRepository.findBySession(session);
     }
-
-
-
-
-
 }
-
-

@@ -32,7 +32,7 @@ public class User {
     @Column(name = "us_pw" , length = 100, nullable = false)
     private String usPw;
 
-    @Column(name = "us_nickname" , length = 50 , nullable = false , unique = true)
+    @Column(name = "us_nickname" , length = 50 , nullable = false )
     private String usNickname;
 
     @Column(name = "us_gender", length = 10)
@@ -70,4 +70,7 @@ public class User {
         this.usPw = password;
     }
 
+    public String getEmail() {
+        return this.usEmail;
+    }
 }

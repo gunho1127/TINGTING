@@ -63,6 +63,7 @@ public class SignController {
         return ResponseEntity.ok(signService.logIn(dto, response));
     }
 
+    @PostMapping("/logout")
     public ResponseEntity<Void> logout(@AuthenticationPrincipal User user,
                                        @RequestHeader(value = "Authorization", required = false) String authHeader,
                                        HttpServletResponse response) {
@@ -88,6 +89,21 @@ public class SignController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
+
+    @PostMapping("/find-password")
+    public ResponseEntity<String> findPassword(@RequestParam String email) {
+        System.out.println("입력된 이메일: " + email);
+        try {
+            signService.sendTemporaryPassword(email);
+            return ResponseEntity.ok("임시 비밀번호가 이메일로 전송되었습니다.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("비밀번호 찾기 중 오류가 발생했습니다.");
+        }
+
+    }
+
 
 
 

@@ -18,8 +18,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -165,5 +169,63 @@ public class SignService {
         rc.setPath("/");
         rc.setMaxAge(0);
         response.addCookie(rc);
+    }
+    // ✅ 임시 비밀번호 설정
+    public void sendTemporaryPassword(String email) {
+        Optional<User> optionalUser = userRepository.findByUsEmail(email);
+
+        if (optionalUser.isEmpty()) {
+            throw new IllegalArgumentException("해당 이메일로 가입된 사용자가 없습니다.");
+        }
+
+        User user = optionalUser.get();
+
+        // 임시 비밀번호 생성
+        String tempPassword = generateRandomPassword(10);
+
+        // 암호화하여 저장
+        String encodedPassword = passwordEncoder.encode(tempPassword);
+        user.setPassword(encodedPassword);
+        userRepository.save(user);
+
+        // 이메일 발송
+        String subject = "TingTing 임시 비밀번호 안내";
+        String message = "안녕하세요, TingTing입니다.\n\n" +
+                "임시 비밀번호는 다음과 같습니다:\n\n" +
+                tempPassword + "\n\n" +
+                "로그인 후 반드시 비밀번호를 변경해주세요.";
+        emailService.sendEmail(user.getEmail(), subject, message);
+    }
+
+    //✅ 임시 비밀번호 생성
+    private String generateRandomPassword(int length) {
+        String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String lower = "abcdefghijklmnopqrstuvwxyz";
+        String digits = "0123456789";
+        String symbols = "!@#$%^&*()-_=+[]{};:<>?";
+
+        String allChars = upper + lower + digits + symbols;
+        SecureRandom random = new SecureRandom();
+        StringBuilder password = new StringBuilder();
+
+        // 최소 1개씩 포함 보장
+        password.append(upper.charAt(random.nextInt(upper.length())));
+        password.append(lower.charAt(random.nextInt(lower.length())));
+        password.append(digits.charAt(random.nextInt(digits.length())));
+        password.append(symbols.charAt(random.nextInt(symbols.length())));
+
+        for (int i = 4; i < length; i++) {
+            password.append(allChars.charAt(random.nextInt(allChars.length())));
+        }
+
+        // 셔플링
+        List<Character> charList = password.chars()
+                .mapToObj(c -> (char) c)
+                .collect(Collectors.toList());
+        Collections.shuffle(charList);
+        StringBuilder finalPassword = new StringBuilder();
+        charList.forEach(finalPassword::append);
+
+        return finalPassword.toString();
     }
 }
