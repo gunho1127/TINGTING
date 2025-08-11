@@ -41,7 +41,6 @@ jobs:
           host: ${{ secrets.EC2_HOST }}                      # env secret
           username: ${{ secrets.EC2_USER }}                  # env secret
           key: ${{ secrets.EC2_SSH_KEY }}                    # env secret
-          port: ${{ secrets.SSH_PORT || '22' }}              # env secret (옵션)
           script: |
             set -e
             APP_DIR=/tingting
