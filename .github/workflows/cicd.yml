@@ -59,17 +59,16 @@ jobs:
 
             # compose.yaml 생성(최초 1회) 또는 유지
             if [ ! -f compose.yaml ]; then
-              cat <<'EOL' > compose.yaml
-services:
-  backend:
-    image: ${REGISTRY_IMAGE}:${TAG}
-    container_name: tingting-backend
-    ports:
-      - "8080:8080"
-    env_file:
-      - .env
-    restart: always
-EOL
+              printf '%s\n' \
+              'services:' \
+              '  backend:' \
+              '    image: ${REGISTRY_IMAGE}:${TAG}' \
+              '    container_name: tingting-backend' \
+              '    ports:' \
+              '      - "8080:8080"' \
+              '    env_file:' \
+              '      - .env' \
+              '    restart: always' > compose.yaml
             fi
 
             # .env 존재 확인
@@ -92,7 +91,7 @@ EOL
             fi
 
             # 최신 이미지 풀 & 재기동
-            docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" -p "${{ secrets.DOCKERHUB_TOKEN }}"
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
             docker compose pull
             docker compose up -d
             docker image prune -f
