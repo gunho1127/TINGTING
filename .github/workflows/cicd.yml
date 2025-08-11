@@ -11,45 +11,55 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}        # repo secret
-          password: ${{ secrets.DOCKERHUB_TOKEN }}           # repo secret
-      - id: meta
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract meta (tags & labels)
+        id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest
             type=sha,format=short
-      - uses: docker/build-push-action@v6
+
+      - name: Build and Push
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
-    environment: production
     steps:
       - name: SSH deploy to EC2
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.EC2_HOST }}                      # env secret
-          username: ${{ secrets.EC2_USER }}                  # env secret
-          key: ${{ secrets.EC2_SSH_KEY }}                    # env secret
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            set -e
-            APP_DIR=/tingting
-            mkdir -p $APP_DIR
-            cd $APP_DIR
+            set -euo pipefail
 
-            # compose.yaml 생성/유지
+            APP_DIR=/tingting
+            mkdir -p "$APP_DIR"
+            cd "$APP_DIR"
+
+            # compose.yaml 생성(최초 1회) 또는 유지
             if [ ! -f compose.yaml ]; then
-              cat > compose.yaml <<'YAML'
+              cat <<'EOL' > compose.yaml
 services:
   backend:
     image: ${REGISTRY_IMAGE}:${TAG}
@@ -59,28 +69,30 @@ services:
     env_file:
       - .env
     restart: always
-YAML
+EOL
             fi
 
-            # .env 존재 체크
+            # .env 존재 확인
             if [ ! -f .env ]; then
-              echo "ERROR: .env not found on EC2. Create it with secrets before deploying." >&2
+              echo "ERROR: .env not found on EC2 at $APP_DIR/.env" >&2
               exit 1
             fi
 
-            # 이미지 태그 갱신
+            # .env의 레지스트리/태그 갱신
             if grep -q '^REGISTRY_IMAGE=' .env; then
               sed -i "s|^REGISTRY_IMAGE=.*|REGISTRY_IMAGE=${{ env.IMAGE_NAME }}|" .env
             else
               echo "REGISTRY_IMAGE=${{ env.IMAGE_NAME }}" >> .env
             fi
+
             if grep -q '^TAG=' .env; then
               sed -i "s|^TAG=.*|TAG=latest|" .env
             else
               echo "TAG=latest" >> .env
             fi
 
-            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+            # 최신 이미지 풀 & 재기동
+            docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" -p "${{ secrets.DOCKERHUB_TOKEN }}"
             docker compose pull
             docker compose up -d
             docker image prune -f
