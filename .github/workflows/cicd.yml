@@ -50,15 +50,17 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.EC2_SSH_PORT || '22' }}
           script: |
-            set -e
+            set -euo pipefail
+
             APP_DIR=/tingting
             mkdir -p "$APP_DIR"
             cd "$APP_DIR"
 
             # compose.yaml 생성(최초 1회) 또는 유지
             if [ ! -f compose.yaml ]; then
-              cat > compose.yaml <<'YAML'
+              cat > compose.yaml <<'EOL'
 services:
   backend:
     image: ${REGISTRY_IMAGE}:${TAG}
@@ -68,15 +70,16 @@ services:
     env_file:
       - .env
     restart: always
-YAML
+EOL
             fi
 
+            # .env 존재 확인 (민감값 포함, EC2에만)
             if [ ! -f .env ]; then
-              echo "ERROR: .env not found on EC2. Create it before deploying." >&2
+              echo "ERROR: .env not found on EC2 at $APP_DIR/.env" >&2
               exit 1
             fi
 
-            # .env의 이미지/태그 갱신
+            # .env의 레지스트리/태그 갱신
             if grep -q '^REGISTRY_IMAGE=' .env; then
               sed -i "s|^REGISTRY_IMAGE=.*|REGISTRY_IMAGE=${{ env.IMAGE_NAME }}|" .env
             else
@@ -89,6 +92,7 @@ YAML
               echo "TAG=latest" >> .env
             fi
 
+            # 최신 이미지 풀 & 재기동
             docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" -p "${{ secrets.DOCKERHUB_TOKEN }}"
             docker compose pull
             docker compose up -d
