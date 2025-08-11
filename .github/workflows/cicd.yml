@@ -52,24 +52,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -euo pipefail
-
             APP_DIR=/tingting
-            mkdir -p "$APP_DIR"
             cd "$APP_DIR"
-
-            # compose.yaml 생성(최초 1회) 또는 유지
-            if [ ! -f compose.yaml ]; then
-              printf '%s\n' \
-              'services:' \
-              '  backend:' \
-              '    image: ${REGISTRY_IMAGE}:${TAG}' \
-              '    container_name: tingting-backend' \
-              '    ports:' \
-              '      - "8080:8080"' \
-              '    env_file:' \
-              '      - .env' \
-              '    restart: always' > compose.yaml
-            fi
 
             # .env 존재 확인
             if [ ! -f .env ]; then
@@ -96,3 +80,4 @@ jobs:
             docker compose up -d
             docker image prune -f
             docker compose ps
+  
