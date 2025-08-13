@@ -101,10 +101,5 @@ public class SignController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("비밀번호 찾기 중 오류가 발생했습니다.");
         }
-
     }
-
-
-
-
 }
