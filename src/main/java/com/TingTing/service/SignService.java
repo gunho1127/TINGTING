@@ -1,6 +1,6 @@
 package com.TingTing.service;
 
-import com.TingTing.dto.ResponseDTO;
+import com.TingTing.dto.ResponseDto;
 import com.TingTing.dto.SignInRequestDto;
 import com.TingTing.dto.SignUpRequestDto;
 import com.TingTing.dto.TokenResponseDto;
@@ -46,9 +46,9 @@ public class SignService {
     }
 
     // ✅ 인증 코드 전송
-    public ResponseDTO sendVerificationEmail(String email) {
+    public ResponseDto sendVerificationEmail(String email) {
         if (isEmailExist(email)) {
-            return new ResponseDTO(false, "이미 가입된 이메일입니다.");
+            return new ResponseDto(false, "이미 가입된 이메일입니다.");
         }
 
         // 기존 인증 기록 삭제
@@ -69,36 +69,36 @@ public class SignService {
         // 이메일 전송
         emailService.sendVerificationEmail(email, code);
 
-        return new ResponseDTO(true, "인증코드를 전송했습니다.");
+        return new ResponseDto(true, "인증코드를 전송했습니다.");
     }
 
     // ✅ 인증 코드 확인
-    public ResponseDTO checkVerificationCode(String email, String code) {
+    public ResponseDto checkVerificationCode(String email, String code) {
         Optional<EmailVerificationToken> optional = tokenRepository.findTopByEmailOrderByCreatedAtDesc(email);
 
         if (optional.isEmpty()) {
-            return new ResponseDTO(false, "인증 요청이 없습니다.");
+            return new ResponseDto(false, "인증 요청이 없습니다.");
         }
 
         EmailVerificationToken token = optional.get();
 
         if (token.isVerified()) {
-            return new ResponseDTO(false, "이미 인증된 이메일입니다.");
+            return new ResponseDto(false, "이미 인증된 이메일입니다.");
         }
 
         if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
-            return new ResponseDTO(false, "인증 코드가 만료되었습니다.");
+            return new ResponseDto(false, "인증 코드가 만료되었습니다.");
         }
 
         if (!token.getCode().equals(code)) {
-            return new ResponseDTO(false, "인증 코드가 일치하지 않습니다.");
+            return new ResponseDto(false, "인증 코드가 일치하지 않습니다.");
         }
 
         token.setVerified(true);
         token.setVerifiedAt(LocalDateTime.now());
         tokenRepository.save(token);
 
-        return new ResponseDTO(true, "이메일 인증이 완료되었습니다.");
+        return new ResponseDto(true, "이메일 인증이 완료되었습니다.");
     }
 
     // ✅ 이메일 인증 여부 확인

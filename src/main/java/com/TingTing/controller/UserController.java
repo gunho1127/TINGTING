@@ -2,7 +2,7 @@ package com.TingTing.controller;
 
 import com.TingTing.dto.ChangePasswordRequestDto;
 import com.TingTing.dto.UpdateNicknameRequestDto;
-import com.TingTing.dto.UserDTO;
+import com.TingTing.dto.UserDto;
 import com.TingTing.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +19,8 @@ public class UserController {
 
     // ✅ 내 정보 조회 (JWT 기반)
     @GetMapping("/me")
-    public ResponseEntity<UserDTO> getMyProfile(@AuthenticationPrincipal User user) {
-        UserDTO dto = userService.getUserProfile(user.getUsIdx());
+    public ResponseEntity<UserDto> getMyProfile(@AuthenticationPrincipal User user) {
+        UserDto dto = userService.getUserProfile(user.getUsIdx());
         return ResponseEntity.ok(dto);
     }
 
@@ -41,8 +41,8 @@ public class UserController {
 
     // ❓ 특정 유저 정보 조회 (관리자용 또는 테스트용)
     @GetMapping("/{usIdx}")
-    public ResponseEntity<UserDTO> getUserProfile(@PathVariable("usIdx") int usIdx) {
-        UserDTO user = userService.getUserProfile(usIdx);
+    public ResponseEntity<UserDto> getUserProfile(@PathVariable("usIdx") int usIdx) {
+        UserDto user = userService.getUserProfile(usIdx);
         return ResponseEntity.ok(user);
     }
 }
