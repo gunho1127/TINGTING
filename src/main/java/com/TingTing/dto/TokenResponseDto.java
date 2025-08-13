@@ -1,10 +1,10 @@
 package com.TingTing.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
-public class UpdateNicknameRequest {
+@AllArgsConstructor
+public class TokenResponseDto {
     private String nickname;
 }

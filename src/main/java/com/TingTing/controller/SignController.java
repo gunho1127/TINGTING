@@ -1,12 +1,11 @@
 package com.TingTing.controller;
 
 import com.TingTing.dto.ResponseDTO;
-import com.TingTing.dto.SignInRequest;
-import com.TingTing.dto.SignUpRequest;
-import com.TingTing.dto.TokenResponse;
+import com.TingTing.dto.SignInRequestDto;
+import com.TingTing.dto.SignUpRequestDto;
+import com.TingTing.dto.TokenResponseDto;
 import com.TingTing.entity.User;
 import com.TingTing.repository.UserRepository;
-import com.TingTing.service.RefreshTokenService;
 import com.TingTing.service.SignService;
 import com.TingTing.util.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletResponse;
@@ -44,7 +43,7 @@ public class SignController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<ResponseDTO> signup(@RequestBody SignUpRequest request) {
+    public ResponseEntity<ResponseDTO> signup(@RequestBody SignUpRequestDto request) {
         if (signService.isEmailExist(request.getEmail())) {
             return ResponseEntity.ok(new ResponseDTO(false, "이미 가입된 이메일입니다."));
         }
@@ -58,8 +57,8 @@ public class SignController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> signin(@RequestBody SignInRequest dto,
-                                                HttpServletResponse response) {
+    public ResponseEntity<TokenResponseDto> signin(@RequestBody SignInRequestDto dto,
+                                                   HttpServletResponse response) {
         return ResponseEntity.ok(signService.logIn(dto, response));
     }
 

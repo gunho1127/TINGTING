@@ -1,9 +1,9 @@
 package com.TingTing.service;
 
 import com.TingTing.dto.ResponseDTO;
-import com.TingTing.dto.SignInRequest;
-import com.TingTing.dto.SignUpRequest;
-import com.TingTing.dto.TokenResponse;
+import com.TingTing.dto.SignInRequestDto;
+import com.TingTing.dto.SignUpRequestDto;
+import com.TingTing.dto.TokenResponseDto;
 import com.TingTing.entity.User;
 import com.TingTing.entity.EmailVerificationToken;
 import com.TingTing.mapper.UserMapper;
@@ -110,7 +110,7 @@ public class SignService {
     }
 
     // ✅ 회원가입 처리
-    public void signup(SignUpRequest request) {
+    public void signup(SignUpRequestDto request) {
         if (isEmailExist(request.getEmail())) {
             throw new RuntimeException("이미 가입된 이메일입니다.");
         }
@@ -128,7 +128,7 @@ public class SignService {
     }
 
     // ✅ 로그인 처리
-    public TokenResponse logIn(SignInRequest dto, HttpServletResponse response) {
+    public TokenResponseDto logIn(SignInRequestDto dto, HttpServletResponse response) {
         User user = userRepository.findByUsEmail(dto.getEmail())
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 이메일입니다."));
 
@@ -153,7 +153,7 @@ public class SignService {
         rc.setMaxAge((int) (REFRESH_EXPIRE / 1000));
         response.addCookie(rc);
 
-        return new TokenResponse(user.getUsNickname());
+        return new TokenResponseDto(user.getUsNickname());
     }
 
     // ✅ 로그아웃 처리

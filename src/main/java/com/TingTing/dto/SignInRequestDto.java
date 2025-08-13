@@ -5,11 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class SignUpRequest {
+public class SignInRequestDto {
+    // 이메일 로그인용
     private String email;
     private String password;
-    private String nickname;
-    private String age;
-    private String gender;
-    private String job;
 }

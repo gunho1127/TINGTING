@@ -1,7 +1,7 @@
 package com.TingTing.controller;
 
-import com.TingTing.dto.ChangePasswordRequest;
-import com.TingTing.dto.UpdateNicknameRequest;
+import com.TingTing.dto.ChangePasswordRequestDto;
+import com.TingTing.dto.UpdateNicknameRequestDto;
 import com.TingTing.dto.UserDTO;
 import com.TingTing.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ public class UserController {
 
     @PutMapping("/me/nickname")
     public ResponseEntity<Void> updateNickname(@AuthenticationPrincipal User user,
-                                               @RequestBody UpdateNicknameRequest request) {
+                                               @RequestBody UpdateNicknameRequestDto request) {
         userService.updateNickname(user.getUsIdx(), request.getNickname());
         return ResponseEntity.ok().build();
     }
@@ -34,7 +34,7 @@ public class UserController {
     // ✅ 비밀번호 수정
     @PutMapping("/me/password")
     public ResponseEntity<Void> changePassword(@AuthenticationPrincipal User user,
-                                               @RequestBody ChangePasswordRequest request) {
+                                               @RequestBody ChangePasswordRequestDto request) {
         userService.changePassword(user.getUsIdx(), request.getOldPassword(), request.getNewPassword());
         return ResponseEntity.ok().build();
     }
