@@ -41,7 +41,14 @@ public class ChatController {
         return ResponseEntity.ok(response);
     }
 
-
+    @PostMapping("/analysis")
+    public ResponseEntity<ChatAnalysisResponseDto> analyzeChat(
+            @RequestBody ChatAnalysisRequestDto requestDto,
+            @AuthenticationPrincipal User user
+    ) {
+        ChatAnalysisResponseDto analysis = chatService.analyzeSession(user, requestDto.getSessionId());
+        return ResponseEntity.ok(analysis);
+    }
 
     // ✅ 1. 내 세션 목록 조회
     @GetMapping("/sessions")
