@@ -1,6 +1,6 @@
 package com.TingTing.service;
 
-import com.TingTing.dto.UserDTO;
+import com.TingTing.dto.UserDto;
 import com.TingTing.entity.User;
 import com.TingTing.mapper.UserMapper;
 import com.TingTing.repository.UserRepository;
@@ -17,7 +17,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserDTO getUserProfile(int usIdx) {
+    public UserDto getUserProfile(int usIdx) {
         return userRepository.findById(usIdx)
                 .map(UserMapper::toDTO)
                 .orElseThrow(() -> new RuntimeException("User not found"));

@@ -1,14 +1,14 @@
 package com.TingTing.mapper;
 
-import com.TingTing.dto.SignUpRequest;
-import com.TingTing.dto.UserDTO;
+import com.TingTing.dto.SignUpRequestDto;
+import com.TingTing.dto.UserDto;
 import com.TingTing.entity.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 public class UserMapper {
-    public static UserDTO toDTO(User user) {
+    public static UserDto toDTO(User user) {
         if (user == null) return null;
-        return UserDTO.builder()
+        return UserDto.builder()
                 .usIdx(user.getUsIdx())
                 .usEmail(user.getUsEmail())
                 .usPw(user.getUsPw())
@@ -18,7 +18,7 @@ public class UserMapper {
                 .build();
     }
 
-    public static User toEntity(SignUpRequest request, PasswordEncoder passwordEncoder) {
+    public static User toEntity(SignUpRequestDto request, PasswordEncoder passwordEncoder) {
         return User.builder()
                 .usEmail(request.getEmail())
                 .usPw(passwordEncoder.encode(request.getPassword()))

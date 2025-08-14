@@ -1,9 +1,9 @@
 package com.TingTing.service;
 
-import com.TingTing.dto.ResponseDTO;
-import com.TingTing.dto.SignInRequest;
-import com.TingTing.dto.SignUpRequest;
-import com.TingTing.dto.TokenResponse;
+import com.TingTing.dto.ResponseDto;
+import com.TingTing.dto.SignInRequestDto;
+import com.TingTing.dto.SignUpRequestDto;
+import com.TingTing.dto.TokenResponseDto;
 import com.TingTing.entity.User;
 import com.TingTing.entity.EmailVerificationToken;
 import com.TingTing.mapper.UserMapper;
@@ -46,9 +46,9 @@ public class SignService {
     }
 
     // ✅ 인증 코드 전송
-    public ResponseDTO sendVerificationEmail(String email) {
+    public ResponseDto sendVerificationEmail(String email) {
         if (isEmailExist(email)) {
-            return new ResponseDTO(false, "이미 가입된 이메일입니다.");
+            return new ResponseDto(false, "이미 가입된 이메일입니다.");
         }
 
         // 기존 인증 기록 삭제
@@ -69,36 +69,36 @@ public class SignService {
         // 이메일 전송
         emailService.sendVerificationEmail(email, code);
 
-        return new ResponseDTO(true, "인증코드를 전송했습니다.");
+        return new ResponseDto(true, "인증코드를 전송했습니다.");
     }
 
     // ✅ 인증 코드 확인
-    public ResponseDTO checkVerificationCode(String email, String code) {
+    public ResponseDto checkVerificationCode(String email, String code) {
         Optional<EmailVerificationToken> optional = tokenRepository.findTopByEmailOrderByCreatedAtDesc(email);
 
         if (optional.isEmpty()) {
-            return new ResponseDTO(false, "인증 요청이 없습니다.");
+            return new ResponseDto(false, "인증 요청이 없습니다.");
         }
 
         EmailVerificationToken token = optional.get();
 
         if (token.isVerified()) {
-            return new ResponseDTO(false, "이미 인증된 이메일입니다.");
+            return new ResponseDto(false, "이미 인증된 이메일입니다.");
         }
 
         if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
-            return new ResponseDTO(false, "인증 코드가 만료되었습니다.");
+            return new ResponseDto(false, "인증 코드가 만료되었습니다.");
         }
 
         if (!token.getCode().equals(code)) {
-            return new ResponseDTO(false, "인증 코드가 일치하지 않습니다.");
+            return new ResponseDto(false, "인증 코드가 일치하지 않습니다.");
         }
 
         token.setVerified(true);
         token.setVerifiedAt(LocalDateTime.now());
         tokenRepository.save(token);
 
-        return new ResponseDTO(true, "이메일 인증이 완료되었습니다.");
+        return new ResponseDto(true, "이메일 인증이 완료되었습니다.");
     }
 
     // ✅ 이메일 인증 여부 확인
@@ -110,7 +110,7 @@ public class SignService {
     }
 
     // ✅ 회원가입 처리
-    public void signup(SignUpRequest request) {
+    public void signup(SignUpRequestDto request) {
         if (isEmailExist(request.getEmail())) {
             throw new RuntimeException("이미 가입된 이메일입니다.");
         }
@@ -128,7 +128,7 @@ public class SignService {
     }
 
     // ✅ 로그인 처리
-    public TokenResponse logIn(SignInRequest dto, HttpServletResponse response) {
+    public TokenResponseDto logIn(SignInRequestDto dto, HttpServletResponse response) {
         User user = userRepository.findByUsEmail(dto.getEmail())
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 이메일입니다."));
 
@@ -153,7 +153,7 @@ public class SignService {
         rc.setMaxAge((int) (REFRESH_EXPIRE / 1000));
         response.addCookie(rc);
 
-        return new TokenResponse(user.getUsNickname());
+        return new TokenResponseDto(user.getUsNickname());
     }
 
     // ✅ 로그아웃 처리
