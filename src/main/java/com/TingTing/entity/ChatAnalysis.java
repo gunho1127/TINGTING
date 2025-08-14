@@ -109,4 +109,8 @@ public class ChatAnalysis {
     @Column(name = "created_at", nullable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "session_id", referencedColumnName = "session_id", insertable = false, updatable = false)
+    private ChatSession chatSession; // 읽기 전용 연관관계
 }
