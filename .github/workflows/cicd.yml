@@ -23,10 +23,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 커밋 short SHA를 환경변수로 저장
-      - name: Set SHORT_SHA
-        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
-
       - name: Extract meta (tags & labels)
         id: meta
         uses: docker/metadata-action@v5
@@ -34,7 +30,6 @@ jobs:
           images: ${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest
-            type=raw,value=${{ env.SHORT_SHA }}
             type=sha,format=short
 
       - name: Build and Push
@@ -55,8 +50,6 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          # build job에서 만든 SHORT_SHA를 그대로 넘겨줍니다.
-          envs: SHORT_SHA
           script: |
             set -euo pipefail
             APP_DIR=/tingting
@@ -68,7 +61,7 @@ jobs:
               exit 1
             fi
 
-            # .env의 레지스트리/태그 갱신 (이미지 이름/태그를 명시적으로 고정)
+            # .env의 레지스트리/태그 갱신
             if grep -q '^REGISTRY_IMAGE=' .env; then
               sed -i "s|^REGISTRY_IMAGE=.*|REGISTRY_IMAGE=${{ env.IMAGE_NAME }}|" .env
             else
@@ -76,14 +69,15 @@ jobs:
             fi
 
             if grep -q '^TAG=' .env; then
-              sed -i "s|^TAG=.*|TAG=${SHORT_SHA}|" .env
+              sed -i "s|^TAG=.*|TAG=latest|" .env
             else
-              echo "TAG=${SHORT_SHA}" >> .env
+              echo "TAG=latest" >> .env
             fi
 
-            # 최신 이미지 pull & 강제 재생성으로 재시작
+            # 최신 이미지 풀 & 재기동
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
             docker compose pull
-            docker compose up -d --force-recreate --remove-orphans
+            docker compose up -d
             docker image prune -f
             docker compose ps
+  
