@@ -15,6 +15,8 @@ public class UserMapper {
                 .usNickname(user.getUsNickname())
                 .usProfileImg(user.getUsProfileImg())
                 .createdAt(user.getCreatedAt())
+                .usGender(user.getUsGender())
+                .usAge(user.getUsAge())
                 .build();
     }
 

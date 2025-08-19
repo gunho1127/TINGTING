@@ -14,6 +14,8 @@ public class UserDto {
     private String usEmail;
     private String usPw;
     private String usNickname;
+    private String usGender;
+    private String usAge;
     private String usProfileImg;
     private LocalDateTime createdAt;
 }
