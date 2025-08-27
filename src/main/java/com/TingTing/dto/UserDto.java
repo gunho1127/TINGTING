@@ -1,4 +1,4 @@
-package com.TingTing.dto; //(필요하다면, 내부 로직용)
+package com.TingTing.dto;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +15,9 @@ public class UserDto {
     private String usPw;
     private String usNickname;
     private String usGender;
+    private String usJob;
     private String usAge;
     private String usProfileImg;
     private LocalDateTime createdAt;
+    private String usProvider;
 }

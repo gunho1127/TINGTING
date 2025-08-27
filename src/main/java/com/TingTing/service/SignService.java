@@ -37,8 +37,11 @@ public class SignService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
 
-    private final long ACCESS_EXPIRE = 1000 * 60 * 60;         // 1 hour
+    private final long ACCESS_EXPIRE = 1000 * 60 * 60;          // 1 hour
     private final long REFRESH_EXPIRE = 1000 * 60 * 60 * 24 * 7; // 7 days
+
+    // 👉 로컬 개발(HTTP/프록시)에서는 false, HTTPS 배포 시 true 로 바꿔주세요
+    private static final boolean SECURE_COOKIE = false;
 
     // ✅ 이메일 중복 확인
     public boolean isEmailExist(String email) {
@@ -75,7 +78,6 @@ public class SignService {
     // ✅ 인증 코드 확인
     public ResponseDto checkVerificationCode(String email, String code) {
         Optional<EmailVerificationToken> optional = tokenRepository.findTopByEmailOrderByCreatedAtDesc(email);
-
         if (optional.isEmpty()) {
             return new ResponseDto(false, "인증 요청이 없습니다.");
         }
@@ -85,11 +87,9 @@ public class SignService {
         if (token.isVerified()) {
             return new ResponseDto(false, "이미 인증된 이메일입니다.");
         }
-
         if (token.getExpiresAt().isBefore(LocalDateTime.now())) {
             return new ResponseDto(false, "인증 코드가 만료되었습니다.");
         }
-
         if (!token.getCode().equals(code)) {
             return new ResponseDto(false, "인증 코드가 일치하지 않습니다.");
         }
@@ -105,7 +105,7 @@ public class SignService {
     public boolean isEmailVerified(String email) {
         return tokenRepository.findTopByEmailOrderByCreatedAtDesc(email)
                 .filter(EmailVerificationToken::isVerified)
-                .filter(token -> token.getVerifiedAt().isAfter(LocalDateTime.now().minusHours(1)))
+                .filter(t -> t.getVerifiedAt().isAfter(LocalDateTime.now().minusHours(1)))
                 .isPresent();
     }
 
@@ -117,17 +117,15 @@ public class SignService {
         if (!isEmailVerified(request.getEmail())) {
             throw new RuntimeException("이메일 인증이 완료되지 않았습니다.");
         }
-
         if (userRepository.existsByUsNickname(request.getNickname())) {
             throw new RuntimeException("이미 사용 중인 닉네임입니다.");
         }
 
         User user = UserMapper.toEntity(request, passwordEncoder);
         userRepository.save(user);
-
     }
 
-    // ✅ 로그인 처리
+    // ✅ 로그인 처리 — 여기서 HttpOnly 쿠키를 확실히 심어줍니다
     public TokenResponseDto logIn(SignInRequestDto dto, HttpServletResponse response) {
         User user = userRepository.findByUsEmail(dto.getEmail())
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 이메일입니다."));
@@ -141,54 +139,61 @@ public class SignService {
 
         refreshTokenService.saveOrUpdate(user.getUsEmail(), refreshToken, REFRESH_EXPIRE);
 
-        Cookie ac = new Cookie("accessToken", accessToken);
-        ac.setHttpOnly(true);
-        ac.setPath("/");
-        ac.setMaxAge((int) (ACCESS_EXPIRE / 1000));
-        response.addCookie(ac);
+        // 🔐 도메인 지정하지 않습니다. (프록시/로컬에서 localhost에 정상 저장)
+        addCookie(response, "accessToken", accessToken, (int) (ACCESS_EXPIRE / 1000), SECURE_COOKIE);
+        addCookie(response, "refreshToken", refreshToken, (int) (REFRESH_EXPIRE / 1000), SECURE_COOKIE);
 
-        Cookie rc = new Cookie("refreshToken", refreshToken);
-        rc.setHttpOnly(true);
-        rc.setPath("/");
-        rc.setMaxAge((int) (REFRESH_EXPIRE / 1000));
-        response.addCookie(rc);
-
+        // 응답 바디에 토큰을 내려줄 필요는 없음(쿠키로 인증)
+        // 여기서는 닉네임만 돌려 UI가 환영문구 등에 쓰게 함
         return new TokenResponseDto(user.getUsNickname());
     }
 
-    // ✅ 로그아웃 처리
+    // ✅ 로그아웃 처리 — 쿠키 즉시 만료
     public void logOut(User user, HttpServletResponse response) {
         refreshTokenService.delete(user.getUsEmail());
 
-        Cookie ac = new Cookie("accessToken", null);
-        ac.setPath("/");
-        ac.setMaxAge(0);
-        response.addCookie(ac);
-
-        Cookie rc = new Cookie("refreshToken", null);
-        rc.setPath("/");
-        rc.setMaxAge(0);
-        response.addCookie(rc);
+        removeCookie(response, "accessToken", SECURE_COOKIE);
+        removeCookie(response, "refreshToken", SECURE_COOKIE);
     }
+
+    // ===== 쿠키 유틸 =====
+    private void addCookie(HttpServletResponse res, String name, String value, int maxAge, boolean secure) {
+        Cookie c = new Cookie(name, value);
+        c.setHttpOnly(true);
+        c.setPath("/");
+        c.setMaxAge(maxAge);
+        c.setSecure(secure); // 로컬 개발:false, HTTPS 배포:true
+        // c.setDomain(...)  // ❌ 절대 지정하지 마세요
+        res.addCookie(c);
+
+        // (선택) SameSite 설정이 꼭 필요하면 아래 헤더 방식으로 추가:
+        // res.addHeader("Set-Cookie",
+        //         name + "=" + value + "; Path=/; HttpOnly; Max-Age=" + maxAge + (secure ? "; Secure" : "") + "; SameSite=Lax");
+    }
+
+    private void removeCookie(HttpServletResponse res, String name, boolean secure) {
+        Cookie c = new Cookie(name, null);
+        c.setHttpOnly(true);
+        c.setPath("/");
+        c.setMaxAge(0);
+        c.setSecure(secure);
+        res.addCookie(c);
+    }
+
     // ✅ 임시 비밀번호 설정
     public void sendTemporaryPassword(String email) {
         Optional<User> optionalUser = userRepository.findByUsEmail(email);
-
         if (optionalUser.isEmpty()) {
             throw new IllegalArgumentException("해당 이메일로 가입된 사용자가 없습니다.");
         }
 
         User user = optionalUser.get();
 
-        // 임시 비밀번호 생성
         String tempPassword = generateRandomPassword(10);
-
-        // 암호화하여 저장
         String encodedPassword = passwordEncoder.encode(tempPassword);
         user.setPassword(encodedPassword);
         userRepository.save(user);
 
-        // 이메일 발송
         String subject = "TingTing 임시 비밀번호 안내";
         String message = "안녕하세요, TingTing입니다.\n\n" +
                 "임시 비밀번호는 다음과 같습니다:\n\n" +
@@ -197,7 +202,7 @@ public class SignService {
         emailService.sendEmail(user.getEmail(), subject, message);
     }
 
-    //✅ 임시 비밀번호 생성
+    // ✅ 임시 비밀번호 생성
     private String generateRandomPassword(int length) {
         String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         String lower = "abcdefghijklmnopqrstuvwxyz";
