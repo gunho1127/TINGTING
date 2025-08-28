@@ -22,7 +22,7 @@ WORKDIR /app
 # 빌드 단계에서 만든 JAR만 복사
 COPY --from=build /workspace/build/libs/*SNAPSHOT*.jar /app/app.jar
 
-EXPOSE 8080
+EXPOSE 443
 
 # 메모리 옵션과 함께 실행
 ENTRYPOINT ["java", "-Xmx256m", "-Xms128m", "-XX:+UseSerialGC", "-jar", "/app/app.jar"]
