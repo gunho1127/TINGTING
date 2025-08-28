@@ -82,6 +82,8 @@ public class SecurityConfig {
         c.setAllowCredentials(true);
         // 개발 프런트, 필요시 배포 프런트 도메인도 추가
         c.setAllowedOrigins(List.of("http://localhost:3000"));
+        c.setAllowedOrigins(List.of("http://tingtingfrontend-s3.s3-website.ap-northeast-2.amazonaws.com"));
+        c.setAllowedOrigins(List.of("https://tingtingfrontend-s3.s3-website.ap-northeast-2.amazonaws.com"));
         c.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
         c.setAllowedHeaders(List.of("*"));
 
