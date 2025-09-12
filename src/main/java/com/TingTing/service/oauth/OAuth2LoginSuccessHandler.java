@@ -50,7 +50,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         rc.setMaxAge((int) (REFRESH_EXPIRE / 1000));
         response.addCookie(rc);
 
-        response.sendRedirect("/login-success");
+        response.sendRedirect("/main");
         System.out.println("🎯 [OAuth2LoginSuccessHandler] accessToken: " + accessToken);
         System.out.println("🎯 [OAuth2LoginSuccessHandler] refreshToken: " + refreshToken);
     }
