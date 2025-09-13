@@ -85,9 +85,8 @@ public class ChatController {
     }
 
     @GetMapping("/sessions/{sessionId}/analysis")
-    public ResponseEntity<?> getChatAnalysis(@AuthenticationPrincipal User user,
-                                             @PathVariable int sessionId) {
-        ChatAnalysisResponseDto dto = chatService.getChatAnalysis(sessionId, user.getUsIdx());
+    public ResponseEntity<ChatAnalysisResponseDto> getChatAnalysis(@PathVariable int sessionId) {
+        ChatAnalysisResponseDto dto = chatService.getChatAnalysis(sessionId);
         if (dto == null) {
             return ResponseEntity.noContent().build(); // 204
         }
