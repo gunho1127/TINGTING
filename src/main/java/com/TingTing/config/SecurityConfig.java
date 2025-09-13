@@ -57,6 +57,8 @@ public class SecurityConfig {
                 )
                 .formLogin(f -> f.disable())
                 .httpBasic(b -> b.disable())
+
+                // ✅ authorizeHttpRequests는 "한 번"만 선언 + anyRequest()는 맨 마지막
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
@@ -64,10 +66,12 @@ public class SecurityConfig {
                                 "/api/auth/**",
                                 "/ws/**", "/oauth2/**", "/login/oauth2/**", "/oauth2/authorization/**"
                         ).permitAll()
-                        .anyRequest().authenticated()
-                )
-                .authorizeHttpRequests(auth -> auth
+
+                        // ✅ 임시 공개(빠른 확인용): 분석 조회 GET만 공개
                         .requestMatchers(HttpMethod.GET, "/api/chat/sessions/*/analysis").permitAll()
+                        // 세그먼트가 더 복잡하면 아래를 사용:
+                        // .requestMatchers(HttpMethod.GET, "/api/chat/sessions/**/analysis").permitAll()
+
                         .anyRequest().authenticated()
                 )
 
@@ -77,6 +81,7 @@ public class SecurityConfig {
                         .successHandler(oAuth2LoginSuccessHandler)
                         .failureHandler((request, response, exception) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
                 )
+
                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
@@ -85,11 +90,13 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration c = new CorsConfiguration();
         c.setAllowCredentials(true);
-        // 개발 프런트, 필요시 배포 프런트 도메인도 추가
-        c.setAllowedOrigins(List.of("http://localhost:3000"));
-        c.setAllowedOrigins(List.of("http://tingting.shop"));
-        c.setAllowedOrigins(List.of("https://tingting.shop"));
-        c.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+        // ✅ 한 번에 여러 Origin 등록
+        c.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "http://tingting.shop",
+                "https://tingting.shop"
+        ));
+        c.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         c.setAllowedHeaders(List.of("*"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
