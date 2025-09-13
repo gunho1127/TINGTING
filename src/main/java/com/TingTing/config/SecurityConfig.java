@@ -66,6 +66,11 @@ public class SecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET, "/api/chat/sessions/*/analysis").permitAll()
+                        .anyRequest().authenticated()
+                )
+
                 .oauth2Login(oauth2 -> oauth2
                         .tokenEndpoint(token -> token.accessTokenResponseClient(accessTokenResponseClient()))
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
