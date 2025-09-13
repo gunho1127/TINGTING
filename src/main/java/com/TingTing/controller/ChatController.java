@@ -83,4 +83,15 @@ public class ChatController {
         MyDatingStatsDto stats = chatService.getMyDatingStats(user.getUsIdx());
         return ResponseEntity.ok(stats);
     }
+
+    @GetMapping("/sessions/{sessionId}/analysis")
+    public ResponseEntity<?> getChatAnalysis(@AuthenticationPrincipal User user,
+                                             @PathVariable int sessionId) {
+        ChatAnalysisResponseDto dto = chatService.getChatAnalysis(sessionId, user.getUsIdx());
+        if (dto == null) {
+            return ResponseEntity.noContent().build(); // 204
+        }
+        return ResponseEntity.ok(dto); // 또는 ResponseEntity.ok(Map.of("data", dto))
+    }
+
 }

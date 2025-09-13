@@ -16,9 +16,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -146,6 +143,27 @@ public class ChatService {
         }
 
         return chatLogRepository.findBySession(session);
+    }
+
+    // ✅ 특정 세션의 분석 결과 조회
+    public ChatAnalysisResponseDto getChatAnalysis(int sessionId, int usIdx) {
+        // 1) 세션 존재 확인
+        ChatSession session = chatSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new RuntimeException("Session not found"));
+
+        // 2) 소유권 검증 (도메인에 맞춰 필드 접근)
+        //    session.getUsIdx()가 User 엔티티라면, 그 안의 getUsIdx()와 비교
+        if (session.getUsIdx() == null || session.getUsIdx().getUsIdx() != usIdx) {
+            throw new AccessDeniedException("접근 권한이 없습니다.");
+        }
+
+        // 3) 분석 결과 조회 → 없으면 null, 있으면 DTO로 변환
+        ChatAnalysis analysis = chatAnalysisRepository.findBySessionId(sessionId).orElse(null);
+        if (analysis == null) {
+            return null; // 컨트롤러에서 204 No Content로 응답
+        }
+
+        return ChatAnalysisMapper.toDto(analysis);
     }
 
     @Transactional(readOnly = true)
