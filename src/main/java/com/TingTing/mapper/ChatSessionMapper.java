@@ -26,16 +26,21 @@ public class ChatSessionMapper {
         // personality가 여러 개일 경우 첫 번째만 가져오도록 처리
         String firstTrait = " "; // 기본값 (예외 대비)
         if (aiPersonality != null && !aiPersonality.isBlank()) {
-            firstTrait = aiPersonality.split(",")[0]; // "다정"
+            firstTrait = aiPersonality.split(",")[0]; // 예: "다정"
         }
 
         // 타이틀 예: "다정한 지민이와 소개팅"
-        String title = firstTrait + "한 " + aiName + "님과의 설레는 첫 소개팅~";
+        String title = firstTrait + aiName + "님과의 설레는 첫 소개팅~";
 
-        return new ChatSessionResponseDto(
-                session.getSessionId(),
-                title,
-                session.getCreatedAt()
-        );
+        return ChatSessionResponseDto.builder()
+                .sessionId(session.getSessionId())
+                .title(title)
+                .createdAt(session.getCreatedAt())
+                .partnerGender(null)      // or session.getXXX() if exists
+                .partnerAge(null)         // or 값이 있다면 입력
+                .partnerJob(null)         // or "-"
+                .messageCount(0)          // 또는 계산된 값
+                .build();
     }
+
 }
